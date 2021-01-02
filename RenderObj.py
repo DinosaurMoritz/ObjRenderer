@@ -15,4 +15,4 @@ class RenderObj:
 #    [print(f.readline()) for n in range(10000)]
 
 
-RenderObj("car.obj", factor=1.2, angley=110, anglex=0, camPos=(0, 0, -150), colorGradient=True, fileName="pic", rDis=False)
+RenderObj("deer.obj", factor=0.1, angley=110, anglex=0, camPos=(0, 0, -150), colorGradient=True, fileName="pic", rDis=False)
