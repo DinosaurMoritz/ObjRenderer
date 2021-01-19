@@ -60,6 +60,11 @@ class Field:
         except Exception as e:
                     logging.error((e, xyz), exc_info=True)
 
+
+    def calcShadeWithAngle(self, c, shade):
+        pass
+
+
     def drawLine(self, p1, p2, draw=True, shade=False): #Bresenham's line drawing algorithm. If not draw the points are returned but not drawn into self.field
        
         p1 = roundPoint(p1)
@@ -134,8 +139,13 @@ class Field:
                 ListOfPoints.append((x1, y1, z1))
 
         if draw:
-            for c in ListOfPoints:
-                self.drawPixel(c, shade=shade)
+            if not True:# ®®®®®®®®®®®®®®®®®®®®®®®®®®
+                for c in ListOfPoints:
+                    self.drawPixel(c, shade=shade)
+            else:
+                for c in ListOfPoints:
+                    #betterShade = calcShadeWithAngle(c, shade)
+                    self.drawPixel(c, shade=shade)
             
         return ListOfPoints
 
@@ -144,30 +154,46 @@ class Field:
         p1, p2, p3 = p1p2p3
         
         p1p2 = self.drawLine(p1,p2,draw, shade)
+        a1 = angleBetweenPoints(p1,p2)
+        
         p2p3 = self.drawLine(p2,p3,draw, shade)
+        a2 = angleBetweenPoints(p2,p3)
+        
         p3p1 = self.drawLine(p3,p1,draw, shade)
-
+        a3 = angleBetweenPoints(p3,p1)
+        
+        a = int((a1+a2+a3)/3)
+        
+        shadeReduction = int(mapFunc(a, 0, 80, 0, 255))
+                            
+        shade = (max(255 - shadeReduction, 0), max(255 - shadeReduction, 0), max(255 - shadeReduction, 0))
+        #x1,y1,z1 = p1p2[0]
+        #x2,y2,z2 = p1p2[-1]
+        #if a > 80: print("hello"*29)
+        #slope = (y2-y1)/(x2-x1)
+        
+        #print(slope)
+        
         if fill:
             for p in p1p2:
-                self.drawLine(p3,p)
+                self.drawLine(p3, p, shade)
             for p in p2p3:
-                self.drawLine(p1,p)
+                self.drawLine(p1, p, shade)
             for p in p3p1:
-                self.drawLine(p2,p)
+                self.drawLine(p2, p, shade)
                 
         return [p1p2,p2p3,p3p1]
     
     def drawModel(self, name, ax=0, ay=0, factor=1):
-        obj = ObjLoader(name, factor)
+        obj = ObjLoader(name)
         print("drawing polygons!")
        
         
         polys = obj.polys
         # print(obj.polys)
         
-        
-        mp = calcModelMidpoint(polys)
-        print("Model midpoint:",roundPoint(mp))
+        mp = obj.mp
+        print("Model midpoint:", mp)
         
         #x,_,z = mp
         

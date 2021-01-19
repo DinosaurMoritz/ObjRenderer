@@ -101,7 +101,17 @@ class Camera:
                         pixelColor = self.field.lookupColor(p2)
                         #print(pixelColor)
                         if pixelColor != (-1,-1,-1):#self.field.background:
-                            bright = int(mapFunc(round(calcDist(self.pos, p2)), 0, calcDist(self.pos, p), 0, 255))
+                            #bright = int(mapFunc(round(calcDist(self.pos, p2)), 0, calcDist(self.pos, p), 0, 255))
+                            
+                            #x2,y2,z2 = p2
+                            #x1,y1,z1 = self.pos
+                            
+                            #a#ngle = angleBetweenPoints(self.pos, p2)
+                            #print("a", angle)
+                            bright = 0 #int(mapFunc(angle, 0, 360, 0, 255))
+                            #logging.debug(angle)
+                            #logging.debug(bright)
+                            #logging.debug("_"*80)
                             self.picture[n] = (max(pixelColor[0] - bright, 0), max(pixelColor[1] - bright, 0), max(pixelColor[2] - bright, 0))
                             w = True
                             break
@@ -145,21 +155,17 @@ class Camera:
 
             def doRound(number):
                 array = self.pictureAsArray()
-                array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
-                img = Image.fromarray(np.asarray(array, dtype=np.uint8))
-
-                if show:
-                    img.show()
+                img = Image.new("RGB", self.res)
+                img.putdata(array)
+                #array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
+                #img = Image.fromarray(np.asarray(array, dtype=np.uint8))
+                
+                img.save(name + '.png')
             
             roundAmount = int(len(self.picture) / self.stepSize)
             for r in range(roundAmount):
                 printProgressBar(r, roundAmount, prefix = 'Rendering:', suffix = 'Complete', length = 10)
                 doRound(r)
-                
-                array = self.picture
-                array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
-                img = Image.fromarray(np.asarray(array, dtype=np.uint8))
-                img.save(name + '.png')
 
             printProgressBar(roundAmount, roundAmount, prefix = 'Rendering:', suffix = 'Complete', length = 10)
 

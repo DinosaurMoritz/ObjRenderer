@@ -1,13 +1,17 @@
 from _resources import *
 
 class ObjLoader:
-    def __init__(self, name, factor=1):
+    def __init__(self, name):
         self.name = name
-        self.factor = factor
+        #self.factor = factor
         
         self.polys = self.load()
         
-        if self.factor != 1: self.scale(self.polys, self.factor)
+        print("Calcing factor!")
+        self.mp = roundPoint(calcModelMidpoint(self.polys))
+        
+        self.factor = calcScaleFactor(calcFurthestPointDist(self.polys, self.mp), 200)
+        self.scale(self.polys, self.factor)
         
         
         
@@ -53,7 +57,7 @@ class ObjLoader:
         return list({tuple(sorted(x)) for x in polys})
         
     def scale(self, polygons, factor):
-        #if factor == 1: self.polygons = polygons;return
+        if factor == 1: self.polygons = polygons;return
         
         nPolys = []
         for poly in polygons:
