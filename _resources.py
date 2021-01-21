@@ -136,16 +136,8 @@ def flattenList(arr, rounds=1): #Flattens list round times
         arr = sum(arr, [])
     return arr
 
-def flattenList2(l):
-    nL = []
-    for el in l:
-        if type(el) == list:
-            #print(el)
-            nL = nL + flattenList2(el)
-        else:
-            nL = nL + [el]
-    
-    return nL
+#print(flattenList([[(0,0),(1,2)],[(3,3),(4,4)]]))
+
 
 
 def clearScreen():
@@ -183,14 +175,39 @@ def calcModelMidpoint(triangles):
 def calcMidpoint(points):
     l = len(points)
     #print("length",l)
-    assert l != 0
+    #assert l != 0
     xyz = 0,0,0
     for p in points:
         x,y,z = addPoints(p,xyz)
         
     return (x/l,y/l,z/l)
     
+def calcFurthestPointDist(inpTriangles, mp):
+    points = []
+    for t in inpTriangles:
+        for p in t:
+            points.append(p)
     
+    
+    furthestPoint = None
+    furthestPointDistSquared = 0
+    
+    x2, y2, z2 = mp
+    
+    for p in points:
+        x1, y1, z1 = p
+        squaredDist = pow(x2-x1,2)+pow(y2-y1,2)+pow(z2-z1,2)
+        
+        if squaredDist > furthestPointDistSquared:
+            furthestPoint = p
+            furthestPointDistSquared = squaredDist
+    
+    return math.sqrt(furthestPointDistSquared)
+
+def calcScaleFactor(d, reference=100):
+    return reference/d
+        
+        
 def addPoints(*args):
     x,y,z = 0,0,0
     for p in args:
@@ -218,3 +235,18 @@ def turnIntoTriangles(poly):
     triangles.append(poly)
     
     return triangles
+
+def subtractPoints(p1, p2):
+    return [c2 - c1 for c1,c2 in zip(p1, p2)]  
+            
+
+def dotproduct(v1, v2):
+    return sum((a*b) for a, b in zip(v1, v2))
+
+def vectorLength(v):
+    return math.sqrt(dotproduct(v, v))
+
+def angleBetweenPoints(v1, v2):
+    return math.acos(dotproduct(v1, v2) / (vectorLength(v1) * vectorLength(v2))) / (math.pi/180) 
+    
+    

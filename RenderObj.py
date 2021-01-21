@@ -1,18 +1,25 @@
-from _Camera import Camera
-from _render import Field
 import time
 
+from _Camera import Camera
+from _render import Field
+
+
 class RenderObj:
-    def __init__(self, model, factor=1, anglex=0, angley=0, fieldSize=(300, 300, 300), camPos=(0,0,-100), res=(300,300), fileName="pic", colorGradient=True, rDis=False):
+    def __init__(self, model, anglex=0, angley=0, fieldSize=(500, 500, 400), camPos=(0, 0, -100), res=(500, 500),
+                 fileName="pic", colorGradient=True, rDis=False, scaleTO=150):
         startTime = time.time()
         field = Field(*fieldSize)
-        field.drawModel("models/"+model, ax=angley, ay=anglex, factor=factor)
-        Camera(field,  camPos, a=0, fov=80, res=res, colorGradient=colorGradient, rDis=rDis).renderImage(fileName)
-        print(f"The execution took {time.time()-startTime} s / {(time.time()-startTime)/60} min!")
-        
+        field.drawModel("models/" + model, ax=angley, ay=anglex, scaleTO=scaleTO)
+        camera = Camera(field, camPos, a=0, fov=80, res=res, colorGradient=colorGradient, rDis=rDis)
+        camera.renderImage(fileName, consec=True)
+        #print(camera.getInfo())
 
-#with open("ironman.obj") as f:
+        input(f"The execution took {time.time() - startTime} s / {(time.time() - startTime) / 60} min!")
+
+
+# with open("ironman.obj") as f:
 #    [print(f.readline()) for n in range(10000)]
 
-
-RenderObj("deer.obj", factor=0.1, angley=110, anglex=0, camPos=(0, 0, -150), colorGradient=True, fileName="pic", rDis=False)
+if __name__ == "__main__":
+    RenderObj("deer.obj", angley=30, anglex=0, camPos=(0, -85, -150), colorGradient=True, fileName="pic", rDis=False,
+              scaleTO=200)

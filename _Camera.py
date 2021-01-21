@@ -12,38 +12,36 @@ from _resources import *
 
 class Camera:
     radian = math.pi / 180  # Useful to convert degres to radians
-    
-    def __init__(self, field, position, a=0, fov=80, res=(127 - 1, 230), colorGradient=True, rDis=False,):
+
+    def __init__(self, field, position, a=0, fov=80, res=(127 - 1, 230), colorGradient=True, rDis=False, ):
         print("Initiating camera!")
         self.field = field  # Instance of RenderField class
-        x,y,z = position
-        self.pos = (y,x,z)
+        x, y, z = position
+        self.pos = (y, x, z)
         self.a = -a
-        
+
         if self.a != 0:
             self.rotateAllPoints()
-            
+
         self.fov = fov  # Field of view
         self.res = res  # Resolution
-        
+
         if not rDis:  # rDis == render distance
             self.rDis = int(min(self.res[0], self.res[1]) / 2 / math.tan(self.fov / 2 * self.radian)) - 1
         else:
             self.rDis = rDis
-            
-        
+
         # I define "picture plane" as the plane containing all points to wich a ray is cast to check if it collides with anything solid
         self.ep = self.getEdgepoints()  # Dict with edge points of pictureplane
         self.pp = flattenList(self.getPictureplane())
-        self.picture = [(0, 0, 0) for x in range(min(res[0], res[1]) ** 2)] 
-        
+        self.picture = [(0, 0, 0) for x in range(min(res[0], res[1]) ** 2)]
+
         self.stepSize = int(len(self.picture) / 10)
-        
+
         self.sil = list(range(len(self.pp)))
         random.shuffle(self.sil)
-        
-        self.colorGradient = colorGradient
 
+        self.colorGradient = colorGradient
 
     def getInfo(self):
         return f"position: {str(self.pos)}; fov: {str(self.fov)}; render distance: {str(self.rDis)}; render plane width: {str(self.ep['ab'])}; render mid point: {str(self.ep['mp'])}"
@@ -76,9 +74,6 @@ class Camera:
         return [[(self.ep["c"][0] + x, self.ep["c"][1] + y, self.ep["c"][2]) for y in range(self.ep["ad"])] for x in
                 range(self.ep["ab"])]
     
-   # def getPictureplane(self):
-         
-                
     def pictureAsArray(self, steps=False):
         if not steps:
             steps = self.stepSize
@@ -89,79 +84,97 @@ class Camera:
 
         usil = self.sil[:steps]
         self.sil = self.sil[steps:]
-        
+
         if self.colorGradient:
-           
+
             for n in usil:
                 p = self.pp[n]
-                
+
                 line = self.field.drawLine(self.pos, p, False)
                 for p2 in line:
-                    try:
-                        pixelColor = self.field.lookupColor(p2)
-                        #print(pixelColor)
-                        if pixelColor != (-1,-1,-1):#self.field.background:
-                            bright = int(mapFunc(round(calcDist(self.pos, p2)), 0, calcDist(self.pos, p), 0, 255))
-                            self.picture[n] = (max(pixelColor[0] - bright, 0), max(pixelColor[1] - bright, 0), max(pixelColor[2] - bright, 0))
-                            w = True
-                            break
-    
-                    except Exception as e:
-                        logging.error(e, exc_info=True)
-                        raise
-                        
+                    pixelColor = self.field.lookupColor(p2)
+                    if pixelColor != (-1, -1, -1):  # self.field.background:
+                        bright = int(mapFunc(round(calcDist(self.pos, p2)), 0, calcDist(self.pos, p), 0, 255))
+                        self.picture[n] = (max(pixelColor[0] - bright, 0), max(pixelColor[1] - bright, 0),
+                                           max(pixelColor[2] - bright, 0))
+                        w = True
+                        break
+
                 if not w:
                     self.picture[n] = (0, 0, 0)
                 w = False
         else:
             for n in usil:
                 p = self.pp[n]
-                
+
                 line = self.field.drawLine(self.pos, p, False)
                 for p2 in line:
                     try:
                         pixelColor = self.field.lookupColor(p2)
-                        #print(pixelColor)
-                        if pixelColor != (-1,-1,-1):#self.field.background:
-                            self.picture[n] = pixelColor 
+                        # print(pixelColor)
+                        if pixelColor != (-1, -1, -1):  # self.field.background:
+                            self.picture[n] = pixelColor
                             w = True
                             break
-    
+
                     except Exception as e:
                         logging.error(e, exc_info=True)
                         raise
-                        
+
                 if not w:
                     self.picture[n] = (0, 0, 0)
                 w = False
-            
-        return self.picture
 
+        return self.picture
 
     def renderImage(self, name, consec=True, show=True):
         print("In render!")
-        #roundNumber = 1
+        # roundNumber = 1
         if consec:
 
             def doRound(number):
                 array = self.pictureAsArray()
-                array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
-                img = Image.fromarray(np.asarray(array, dtype=np.uint8))
-
-                if show:
-                    img.show()
-            
-            roundAmount = int(len(self.picture) / self.stepSize)
-            for r in range(roundAmount):
-                printProgressBar(r, roundAmount, prefix = 'Rendering:', suffix = 'Complete', length = 10)
-                doRound(r)
-                
-                array = self.picture
-                array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
-                img = Image.fromarray(np.asarray(array, dtype=np.uint8))
+                img = Image.new("RGB", self.res)
+                img.putdata(array)
                 img.save(name + '.png')
 
-            printProgressBar(roundAmount, roundAmount, prefix = 'Rendering:', suffix = 'Complete', length = 10)
+
+            roundAmount = int(len(self.picture) / self.stepSize)
+            for r in range(roundAmount):
+                printProgressBar(r, roundAmount, prefix='Rendering:', suffix='Complete', length=10)
+                doRound(r)
+
+            printProgressBar(roundAmount, roundAmount, prefix='Rendering:', suffix='Complete', length=10)
+
+        else:
+            array = self.pictureAsArray(1)
+            img = Image.new("RGB", self.res)
+            img.putdata(array)
+            img.save(name + '.png')
+            img.show()
+
+
+"""
+    def renderImage(self, name, consec=True, show=True):
+        print("In render!")
+        # roundNumber = 1
+        if consec:
+
+            def doRound(number):
+                array = self.pictureAsArray()
+                img = Image.new("RGB", self.res)
+                img.putdata(array)
+                # array = [array[i:i + self.ep["ab"]] for i in range(0, len(array), self.ep["ab"])]
+                # img = Image.fromarray(np.asarray(array, dtype=np.uint8))
+
+                img.save(name + '.png')
+
+            roundAmount = int(len(self.picture) / self.stepSize)
+            for r in range(roundAmount):
+                printProgressBar(r, roundAmount, prefix='Rendering:', suffix='Complete', length=10)
+                doRound(r)
+
+            printProgressBar(roundAmount, roundAmount, prefix='Rendering:', suffix='Complete', length=10)
 
         else:
             print("In render")
@@ -172,9 +185,13 @@ class Camera:
             if show:
                 img.show()
             img.save(name + '.png')
-            
 
-"""
+
+
+
+
+
+
 import logging
 
 logging.basicConfig(filename='camera.log', filemode='w', format='%(levelname)s - %(message)s', level=10)
